@@ -1,70 +1,84 @@
 """
-model.py — Load model và predict
-──────────────────────────────────
+model.py — Gọi HuggingFace Inference API
+─────────────────────────────────────────
+Không load model local → chỉ cần ~50MB RAM
+Phù hợp deploy lên Koyeb free tier
 """
 
 import os
-import torch
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import time
+import requests
 
 # ─── Config ───────────────────────────────────────────────────────────────────
-HF_TOKEN   = os.getenv("HF_TOKEN", "")
+HF_TOKEN   = os.getenv("HF_TOKEN", "hf_...")
 MODEL_NAME = "LHUThacSi/phobert-mu-sentiment"
-DEVICE     = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+API_URL    = f"https://api-inference.huggingface.co/models/{MODEL_NAME}"
+HEADERS    = {"Authorization": f"Bearer {HF_TOKEN}"}
 
-ID2LABEL = {0: "negative", 1: "neutral", 2: "positive"}
 LABEL_VI = {
     "negative": "Tiêu cực",
     "neutral" : "Trung tính",
     "positive": "Tích cực",
 }
 
-# Global model/tokenizer
-_model     = None
-_tokenizer = None
-
 
 def load_model():
-    """Load model từ HuggingFace — gọi 1 lần khi khởi động."""
-    global _model, _tokenizer
-    print(f"⏳ Loading model {MODEL_NAME}...")
-    _tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, token=HF_TOKEN)
-    _model     = AutoModelForSequenceClassification.from_pretrained(
-        MODEL_NAME, token=HF_TOKEN
-    ).to(DEVICE)
-    _model.eval()
-    print(f"✅ Model loaded on {DEVICE}")
+    """Warm up model — gọi 1 lần khi khởi động để tránh cold start."""
+    print(f"⏳ Warming up HF Inference API: {MODEL_NAME}...")
+    try:
+        res = requests.post(API_URL, headers=HEADERS,
+                            json={"inputs": "test"}, timeout=30)
+        if res.status_code == 503:
+            # Model đang load trên HF server — chờ
+            print("   Model đang khởi động trên HF, chờ 20s...")
+            time.sleep(20)
+        print("✅ HF Inference API sẵn sàng!")
+    except Exception as e:
+        print(f"⚠️  Warm up lỗi (bỏ qua): {e}")
+
+
+def _call_api(text: str, retries: int = 3) -> list:
+    """Gọi HF API với retry nếu model đang load (503)."""
+    for attempt in range(retries):
+        res = requests.post(
+            API_URL,
+            headers=HEADERS,
+            json={"inputs": str(text)},
+            timeout=30,
+        )
+        if res.status_code == 200:
+            return res.json()
+        if res.status_code == 503:
+            wait = 10 * (attempt + 1)
+            print(f"   Model đang load, chờ {wait}s...")
+            time.sleep(wait)
+        else:
+            raise Exception(f"HF API lỗi {res.status_code}: {res.text}")
+    raise Exception("HF API không phản hồi sau nhiều lần thử")
 
 
 def predict_one(text: str) -> dict:
     """Predict sentiment cho 1 câu."""
-    enc = _tokenizer(
-        str(text),
-        max_length=128,
-        padding="max_length",
-        truncation=True,
-        return_tensors="pt",
-    ).to(DEVICE)
+    result = _call_api(text)
 
-    with torch.no_grad():
-        logits = _model(**enc).logits
+    # HF trả về: [[{"label": "negative", "score": 0.8}, ...]]
+    scores_raw = result[0] if isinstance(result[0], list) else result
+    scores = {item["label"].lower(): item["score"] for item in scores_raw}
 
-    probs   = torch.softmax(logits, dim=1)[0].cpu().numpy()
-    pred_id = int(probs.argmax())
-    label   = ID2LABEL[pred_id]
+    label = max(scores, key=scores.get)
 
     return {
         "label"   : label,
-        "label_vi": LABEL_VI[label],
+        "label_vi": LABEL_VI.get(label, label),
         "scores"  : {
-            "negative": round(float(probs[0]), 4),
-            "neutral" : round(float(probs[1]), 4),
-            "positive": round(float(probs[2]), 4),
+            "negative": round(scores.get("negative", 0), 4),
+            "neutral" : round(scores.get("neutral",  0), 4),
+            "positive": round(scores.get("positive", 0), 4),
         },
     }
 
 
-def predict_batch(texts: list[str]) -> dict:
+def predict_batch(texts: list) -> dict:
     """Predict sentiment cho danh sách câu."""
     results = []
     counts  = {"negative": 0, "neutral": 0, "positive": 0}
