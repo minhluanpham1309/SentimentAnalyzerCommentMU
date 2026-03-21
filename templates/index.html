@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MU Sentiment Analyzer</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<header>
+  <div class="logo-badge">MU</div>
+  <div>
+    <div class="logo-title">Sentiment Analyzer</div>
+    <div class="logo-sub">Manchester United · Vietnamese Comments</div>
+  </div>
+  <div class="model-badge">{{ model_name }}</div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab(0, this)">⚡ Phân tích đơn</div>
+  <div class="tab" onclick="switchTab(1, this)">📊 Phân tích hàng loạt</div>
+</div>
+
+<div class="content">
+
+  <!-- TAB 1: Single -->
+  <div class="panel active" id="panel0">
+    <div class="card">
+      <div class="card-title">Nhập bình luận cần phân tích</div>
+      <textarea id="singleInput" rows="4"
+        placeholder="Ví dụ: MU mùa này ra hang quá, chán thật sự luôn á..."></textarea>
+      <button class="btn" onclick="analyzeSingle()" id="singleBtn">Phân tích</button>
+      <div class="loading" id="singleLoading">
+        <span class="spinner"></span>Đang phân tích...
+      </div>
+    </div>
+
+    <div class="result-box card" id="singleResult">
+      <div class="card-title">Kết quả</div>
+      <div class="result-label" id="resultLabel">—</div>
+      <div class="result-text" id="resultText"></div>
+      <div class="score-bars">
+        <div class="score-row">
+          <span class="score-name">Tiêu cực</span>
+          <div class="score-bar-wrap">
+            <div class="score-bar neg" id="barNeg" style="width:0%"></div>
+          </div>
+          <span class="score-val neg" id="valNeg">0%</span>
+        </div>
+        <div class="score-row">
+          <span class="score-name">Trung tính</span>
+          <div class="score-bar-wrap">
+            <div class="score-bar neu" id="barNeu" style="width:0%"></div>
+          </div>
+          <span class="score-val neu" id="valNeu">0%</span>
+        </div>
+        <div class="score-row">
+          <span class="score-name">Tích cực</span>
+          <div class="score-bar-wrap">
+            <div class="score-bar pos" id="barPos" style="width:0%"></div>
+          </div>
+          <span class="score-val pos" id="valPos">0%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: Batch -->
+  <div class="panel" id="panel1">
+    <div class="card">
+      <div class="card-title">Nhập danh sách bình luận (JSON Array)</div>
+      <textarea id="batchInput" rows="8"
+        placeholder='["MU đá hay quá!", "MU mùa này tệ thật", "Trận hôm nay mấy giờ?"]'></textarea>
+      <button class="btn" onclick="analyzeBatch()" id="batchBtn">Phân tích hàng loạt</button>
+      <div class="loading" id="batchLoading">
+        <span class="spinner"></span>Đang phân tích...
+      </div>
+    </div>
+
+    <div id="batchResult" style="display:none">
+      <div class="card">
+        <div class="card-title">Thống kê tổng quan</div>
+        <div class="stats-grid">
+          <div class="stat-card neg">
+            <div class="stat-num neg" id="cntNeg">0</div>
+            <div class="stat-lbl">Tiêu cực</div>
+          </div>
+          <div class="stat-card neu">
+            <div class="stat-num neu" id="cntNeu">0</div>
+            <div class="stat-lbl">Trung tính</div>
+          </div>
+          <div class="stat-card pos">
+            <div class="stat-num pos" id="cntPos">0</div>
+            <div class="stat-lbl">Tích cực</div>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="pieChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Chi tiết từng bình luận</div>
+        <div class="result-list" id="resultList"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>
