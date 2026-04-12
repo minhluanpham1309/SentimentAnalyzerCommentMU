@@ -4,14 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MU Sentiment Analyzer</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='label_editor.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
 <header>
-  <div class="logo-badge">MU</div>
+  <img src="{{ url_for('static', filename='mu_logo.png') }}" alt="MU" style="height:52px;width:52px;object-fit:contain;">
   <div>
     <div class="logo-title">Sentiment Analyzer</div>
     <div class="logo-sub">Manchester United · Vietnamese Comments</div>
@@ -22,6 +23,7 @@
 <div class="tabs">
   <div class="tab active" onclick="switchTab(0, this)">⚡ Phân tích đơn</div>
   <div class="tab" onclick="switchTab(1, this)">📊 Phân tích hàng loạt</div>
+  <div class="tab" onclick="openLE()">🏷 Label Editor</div>
 </div>
 
 <div class="content">
@@ -111,6 +113,77 @@
 
 </div>
 
+<!-- ══ LABEL EDITOR OVERLAY ══ -->
+<div id="le-overlay">
+
+  <!-- Upload state -->
+  <div id="le-up" style="display:flex;flex-direction:column;flex:1">
+    <div class="le-hd">
+      <div class="le-logo">
+        <div class="le-logo-icon">⚽</div>
+        <div><div class="le-logo-text">MU Label Editor</div><div class="le-logo-sub">SENTIMENT REVIEW TOOL</div></div>
+      </div>
+      <button class="le-btn" onclick="closeLE()">✕ Quay lại Analyzer</button>
+    </div>
+    <div class="le-up-outer">
+      <div class="le-up-zone" id="le-dz">
+        <div class="le-up-icon">📂</div>
+        <div class="le-up-title">Upload Dataset</div>
+        <div class="le-up-sub">Upload file <strong>sample_6500_labeled_.csv</strong><br>để bắt đầu review và chỉnh nhãn sentiment</div>
+        <input type="file" id="le-fi" accept=".csv" style="display:none">
+        <button class="le-btn p" onclick="document.getElementById('le-fi').click()">Chọn file CSV</button>
+        <p style="margin-top:12px;font-size:11px;color:var(--le-muted);font-family:'Space Mono',monospace">hoặc kéo thả file vào đây</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Editor state -->
+  <div id="le-ed" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+    <div class="le-hd">
+      <div class="le-logo">
+        <div class="le-logo-icon">⚽</div>
+        <div><div class="le-logo-text">MU Label Editor</div><div class="le-logo-sub" id="le-fname">—</div></div>
+      </div>
+      <div class="le-hd-right">
+        <div class="le-stat"><div class="le-sn pos" id="le-sp">0</div><div class="le-sl">Positive</div></div>
+        <div class="le-stat"><div class="le-sn neg" id="le-sn">0</div><div class="le-sl">Negative</div></div>
+        <div class="le-stat"><div class="le-sn neu" id="le-su">0</div><div class="le-sl">Neutral</div></div>
+        <div class="le-stat"><div class="le-sn" id="le-se" style="color:var(--le-edited)">0</div><div class="le-sl">Edited</div></div>
+        <button class="le-btn" onclick="le_new()">📂 Đổi file</button>
+        <button class="le-btn p" onclick="le_export()">⬇ Export CSV</button>
+        <button class="le-btn" onclick="closeLE()" style="margin-left:4px">✕ Quay lại</button>
+      </div>
+    </div>
+
+    <div class="le-prog"><div class="le-prog-fill" id="le-pf"></div></div>
+
+    <div class="le-ctrl">
+      <div class="le-fg">
+        <button class="le-fb aa" onclick="le_filter('all',this)">ALL</button>
+        <button class="le-fb" onclick="le_filter('positive',this)">POS</button>
+        <button class="le-fb" onclick="le_filter('negative',this)">NEG</button>
+        <button class="le-fb" onclick="le_filter('neutral',this)">NEU</button>
+        <button class="le-fb" onclick="le_filter('edited',this)" style="border-color:var(--le-edited);color:var(--le-edited)">EDITED</button>
+      </div>
+      <div class="le-sw"><input type="text" id="le-q" placeholder="Tìm kiếm comment..." oninput="le_search()"></div>
+      <span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--le-muted)" id="le-rc"></span>
+    </div>
+
+    <div class="le-hint">
+      Phím tắt: <kbd>P</kbd> positive &nbsp;<kbd>N</kbd> negative &nbsp;<kbd>U</kbd> neutral &nbsp;<kbd>↑</kbd><kbd>↓</kbd> di chuyển hàng
+    </div>
+
+    <div class="le-tw">
+      <table class="le-tbl">
+        <thead><tr><th>#</th><th>Comment</th><th>Group</th><th>Label</th></tr></thead>
+        <tbody id="le-tb"></tbody>
+      </table>
+    </div>
+    <div class="le-pg" id="le-pg"></div>
+  </div>
+</div>
+
+<div class="le-toast" id="le-t"></div>
+
 <script src="{{ url_for('static', filename='main.js') }}"></script>
-</body>
-</html>
+<script src="{{ url_for('static', filename='label_editor.js') }}"></script>

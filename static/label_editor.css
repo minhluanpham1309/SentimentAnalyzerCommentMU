@@ -1,0 +1,174 @@
+/* ══ LABEL EDITOR — full-screen overlay, design gốc ══ */
+:root {
+  --le-bg:      #0a0a0f;
+  --le-surface: #12121a;
+  --le-border:  #1e1e2e;
+  --le-pos:     #22c55e; --le-pos-dim: rgba(34,197,94,0.12);
+  --le-neg:     #ef4444; --le-neg-dim: rgba(239,68,68,0.12);
+  --le-neu:     #f59e0b; --le-neu-dim: rgba(245,158,11,0.12);
+  --le-text:    #e2e8f0; --le-muted:   #64748b;
+  --le-accent:  #e63946; --le-edited:  #a78bfa;
+}
+/* Reset style.css overrides inside the overlay */
+#le-overlay input {
+  background: var(--le-surface); border: 1px solid var(--le-border);
+  border-radius: 6px; color: var(--le-text);
+  font-family: 'Space Mono', monospace; font-size: 12px;
+  outline: none; transition: border-color 0.15s;
+  padding: 8px 14px; width: 100%; resize: none;
+}
+#le-overlay input:focus { border-color: var(--le-accent); box-shadow: none; }
+#le-overlay button {
+  background: none; border: none; margin: 0; padding: 0;
+  transform: none; font-family: 'Syne', sans-serif;
+  cursor: pointer; transition: all 0.15s;
+}
+#le-overlay button:hover { transform: none; }
+#le-overlay {
+  position: fixed; inset: 0; z-index: 300;
+  display: none; flex-direction: column;
+  background: var(--le-bg); color: var(--le-text);
+  font-family: 'Syne', sans-serif;
+}
+#le-overlay.open { display: flex; }
+
+.le-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 32px; flex-shrink: 0;
+  border-bottom: 1px solid var(--le-border);
+  background: var(--le-surface);
+}
+.le-logo { display: flex; align-items: center; gap: 12px; }
+.le-logo-icon {
+  width: 34px; height: 34px; background: var(--le-accent);
+  border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 17px;
+}
+.le-logo-text { font-size: 17px; font-weight: 800; letter-spacing: -0.5px; }
+.le-logo-sub  { font-size: 11px; color: var(--le-muted); font-family: 'Space Mono', monospace; }
+.le-hd-right  { display: flex; gap: 20px; align-items: center; }
+.le-stat { text-align: center; }
+.le-sn { font-size: 19px; font-weight: 800; font-family: 'Space Mono', monospace; }
+.le-sn.pos { color: var(--le-pos); } .le-sn.neg { color: var(--le-neg); } .le-sn.neu { color: var(--le-neu); }
+.le-sl { font-size: 10px; color: var(--le-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+.le-btn {
+  padding: 8px 15px; border-radius: 6px;
+  border: 1px solid var(--le-border);
+  background: var(--le-surface); color: var(--le-text);
+  font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+}
+.le-btn:hover { border-color: var(--le-accent); color: var(--le-accent); }
+.le-btn.p { background: var(--le-accent); border-color: var(--le-accent); color: #fff; }
+.le-btn.p:hover { background: #c62828; }
+
+.le-prog { height: 3px; background: var(--le-border); flex-shrink: 0; }
+.le-prog-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--le-accent), #ff6b6b); transition: width 0.3s; }
+
+.le-ctrl {
+  display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  padding: 13px 32px; flex-shrink: 0;
+  border-bottom: 1px solid var(--le-border); background: var(--le-bg);
+}
+.le-fg { display: flex; gap: 6px; }
+.le-fb {
+  padding: 5px 13px; border-radius: 20px;
+  border: 1px solid var(--le-border); background: transparent;
+  font-family: 'Space Mono', monospace; font-size: 11px;
+  cursor: pointer; transition: all 0.15s; color: var(--le-muted);
+}
+.le-fb.ap { border-color: var(--le-pos); color: var(--le-pos); background: var(--le-pos-dim); }
+.le-fb.an { border-color: var(--le-neg); color: var(--le-neg); background: var(--le-neg-dim); }
+.le-fb.au { border-color: var(--le-neu); color: var(--le-neu); background: var(--le-neu-dim); }
+.le-fb.aa { border-color: var(--le-text); color: var(--le-text); background: rgba(255,255,255,0.06); }
+.le-sw { flex: 1; min-width: 200px; }
+.le-sw input {
+  width: 100%; padding: 8px 14px;
+  background: var(--le-surface); border: 1px solid var(--le-border);
+  border-radius: 6px; color: var(--le-text);
+  font-family: 'Space Mono', monospace; font-size: 12px;
+  outline: none; transition: border-color 0.15s;
+}
+.le-sw input:focus { border-color: var(--le-accent); }
+.le-sw input::placeholder { color: var(--le-muted); }
+
+.le-hint {
+  text-align: center; padding: 7px; flex-shrink: 0;
+  font-size: 11px; color: var(--le-muted);
+  font-family: 'Space Mono', monospace;
+  border-bottom: 1px solid var(--le-border); background: var(--le-bg);
+}
+.le-hint kbd {
+  background: var(--le-surface); border: 1px solid var(--le-border);
+  border-radius: 3px; padding: 1px 5px; font-size: 10px;
+}
+
+.le-tw { flex: 1; overflow-y: auto; }
+.le-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+.le-tbl thead { position: sticky; top: 0; background: var(--le-bg); z-index: 10; }
+.le-tbl thead th {
+  text-align: left; padding: 12px 14px 12px 32px;
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--le-muted); font-family: 'Space Mono', monospace;
+  border-bottom: 1px solid var(--le-border); white-space: nowrap;
+}
+.le-tbl thead th:first-child { padding-left: 32px; }
+.le-tbl tbody tr { border-bottom: 1px solid var(--le-border); transition: background 0.1s; cursor: pointer; }
+.le-tbl tbody tr:hover { background: rgba(255,255,255,0.03); }
+.le-tbl tbody tr.le-sel { background: rgba(230,57,70,0.06); }
+.le-tbl td { padding: 11px 14px; vertical-align: middle; }
+.le-tbl td:first-child { padding-left: 32px; }
+.le-ti { color: var(--le-muted); font-family: 'Space Mono', monospace; font-size: 11px; width: 60px; }
+.le-tt { max-width: 540px; line-height: 1.5; }
+.le-tt .le-hl { color: #fcd34d; font-weight: 600; }
+.le-tg { width: 80px; }
+.le-gb { font-size: 10px; font-family: 'Space Mono', monospace; padding: 2px 7px; border-radius: 10px; background: rgba(255,255,255,0.06); color: var(--le-muted); }
+.le-tl { width: 160px; }
+.le-ls { display: flex; gap: 6px; }
+.le-lb {
+  padding: 4px 10px; border-radius: 4px; border: 1px solid transparent;
+  font-size: 11px; font-weight: 700; font-family: 'Space Mono', monospace;
+  cursor: pointer; transition: all 0.12s; opacity: 0.35;
+}
+.le-lb:hover { opacity: 0.7; }
+.le-lb.on { opacity: 1; }
+.le-lb.pos { border-color: var(--le-pos); color: var(--le-pos); background: var(--le-pos-dim); }
+.le-lb.neg { border-color: var(--le-neg); color: var(--le-neg); background: var(--le-neg-dim); }
+.le-lb.neu { border-color: var(--le-neu); color: var(--le-neu); background: var(--le-neu-dim); }
+
+.le-pg {
+  display: flex; justify-content: center; align-items: center;
+  gap: 8px; padding: 14px 32px; flex-shrink: 0;
+  border-top: 1px solid var(--le-border); background: var(--le-bg);
+}
+.le-pb {
+  padding: 6px 12px; border-radius: 5px;
+  border: 1px solid var(--le-border); background: var(--le-surface);
+  color: var(--le-text); font-family: 'Space Mono', monospace;
+  font-size: 12px; cursor: pointer; transition: all 0.15s;
+}
+.le-pb:hover, .le-pb.on { border-color: var(--le-accent); color: var(--le-accent); }
+.le-pb:disabled { opacity: 0.3; cursor: not-allowed; }
+.le-pi { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--le-muted); padding: 0 8px; }
+
+/* Upload zone inside overlay */
+.le-up-outer { flex: 1; display: flex; align-items: center; justify-content: center; }
+.le-up-zone {
+  max-width: 480px; width: 100%; text-align: center;
+  padding: 48px; border: 2px dashed var(--le-border);
+  border-radius: 16px; background: var(--le-surface); transition: border-color 0.2s;
+}
+.le-up-zone:hover { border-color: var(--le-accent); }
+.le-up-icon { font-size: 48px; margin-bottom: 16px; }
+.le-up-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+.le-up-sub { color: var(--le-muted); font-size: 13px; margin-bottom: 24px; line-height: 1.6; }
+
+.le-toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--le-surface); border: 1px solid var(--le-border);
+  border-radius: 8px; padding: 12px 20px; font-size: 13px;
+  display: none; z-index: 999; animation: leUp 0.2s ease;
+  font-family: 'Syne', sans-serif; color: var(--le-text);
+}
+.le-toast.show { display: block; }
+@keyframes leUp { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
