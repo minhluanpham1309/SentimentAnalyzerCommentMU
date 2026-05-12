@@ -130,8 +130,23 @@
         <div class="le-up-icon">📂</div>
         <div class="le-up-title">Upload Dataset</div>
         <div class="le-up-sub">Upload file <strong>sample_6500_labeled_.csv</strong><br>để bắt đầu review và chỉnh nhãn sentiment</div>
+
+        <!-- Reviewer selector -->
+        <div class="le-rv-wrap">
+          <label class="le-rv-label">👤 Người review</label>
+          <select id="le-rv-sel" class="le-rv-sel" onchange="le_onRevSel(this.value)">
+            <option value="">— Chọn người review —</option>
+            {% for r in reviewers %}
+            <option value="{{ r }}">{{ r }}</option>
+            {% endfor %}
+            <option value="__custom__">✏️ Nhập tên khác…</option>
+          </select>
+          <input type="text" id="le-rv-inp" class="le-rv-inp" placeholder="Nhập tên người review…"
+                 style="display:none" oninput="le_setReviewer(this.value)">
+        </div>
+
         <input type="file" id="le-fi" accept=".csv" style="display:none">
-        <button class="le-btn p" onclick="document.getElementById('le-fi').click()">Chọn file CSV</button>
+        <button class="le-btn p" onclick="le_pickFile()">Chọn file CSV</button>
         <p style="margin-top:12px;font-size:11px;color:var(--le-muted);font-family:'Space Mono',monospace">hoặc kéo thả file vào đây</p>
       </div>
     </div>
@@ -149,6 +164,23 @@
         <div class="le-stat"><div class="le-sn neg" id="le-sn">0</div><div class="le-sl">Negative</div></div>
         <div class="le-stat"><div class="le-sn neu" id="le-su">0</div><div class="le-sl">Neutral</div></div>
         <div class="le-stat"><div class="le-sn" id="le-se" style="color:var(--le-edited)">0</div><div class="le-sl">Edited</div></div>
+        <!-- Reviewer badge + quick-change -->
+        <div class="le-rv-badge" id="le-rv-badge" title="Người đang review">
+          <span class="le-rv-icon">👤</span>
+          <select id="le-rv-hd" class="le-rv-hd-sel" onchange="le_setReviewerHd(this.value)">
+            <option value="">— reviewer —</option>
+            {% for r in reviewers %}
+            <option value="{{ r }}">{{ r }}</option>
+            {% endfor %}
+            <option value="__custom__">✏️ Khác…</option>
+          </select>
+        </div>
+        <!-- Sync status -->
+        <div class="le-sync-wrap">
+          <div class="le-sync-dot" id="le-sync-dot"></div>
+          <span class="le-sync-txt" id="le-sync-txt">—</span>
+        </div>
+        <button class="le-btn" onclick="le_syncNow()" title="Sync ngay lên HuggingFace">☁ Sync HF</button>
         <button class="le-btn" onclick="le_new()">📂 Đổi file</button>
         <button class="le-btn p" onclick="le_export()">⬇ Export CSV</button>
         <button class="le-btn" onclick="closeLE()" style="margin-left:4px">✕ Quay lại</button>

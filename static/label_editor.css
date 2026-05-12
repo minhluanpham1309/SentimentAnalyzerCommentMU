@@ -172,3 +172,61 @@
 }
 .le-toast.show { display: block; }
 @keyframes leUp { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* ── Reviewer selector (upload zone) ── */
+.le-rv-wrap {
+  margin-bottom: 20px; text-align: left;
+  background: rgba(255,255,255,0.04); border: 1px solid var(--le-border);
+  border-radius: 10px; padding: 14px 18px;
+}
+.le-rv-label {
+  display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px;
+  color: var(--le-muted); font-family: 'Space Mono', monospace; margin-bottom: 8px;
+}
+.le-rv-sel {
+  width: 100%; padding: 9px 12px;
+  background: var(--le-bg); border: 1px solid var(--le-border);
+  border-radius: 6px; color: var(--le-text);
+  font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600;
+  outline: none; cursor: pointer; transition: border-color 0.15s;
+  appearance: auto;
+}
+.le-rv-sel:focus { border-color: var(--le-accent); }
+.le-rv-inp {
+  margin-top: 8px; width: 100%; padding: 9px 12px;
+  background: var(--le-bg); border: 1px solid var(--le-accent) !important;
+  border-radius: 6px; color: var(--le-text) !important;
+  font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600;
+  outline: none;
+}
+
+/* ── Reviewer badge (editor header) ── */
+.le-rv-badge {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--le-border);
+  border-radius: 8px; padding: 4px 10px;
+}
+.le-rv-icon { font-size: 14px; }
+.le-rv-hd-sel {
+  background: transparent; border: none; outline: none;
+  color: var(--le-text); font-family: 'Syne', sans-serif;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  max-width: 140px;
+}
+.le-rv-hd-sel option { background: var(--le-surface); color: var(--le-text); }
+
+/* ── Sync status ── */
+.le-sync-wrap {
+  display: flex; align-items: center; gap: 6px;
+  font-family: 'Space Mono', monospace; font-size: 11px; color: var(--le-muted);
+}
+.le-sync-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--le-muted); flex-shrink: 0; transition: background 0.3s;
+}
+.le-sync-dot.syncing { background: #f59e0b; animation: lePulse 1s infinite; }
+.le-sync-dot.ok      { background: var(--le-pos); }
+.le-sync-dot.error   { background: var(--le-neg); }
+.le-sync-dot.idle    { background: var(--le-muted); }
+.le-sync-txt { white-space: nowrap; }
+@keyframes lePulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
